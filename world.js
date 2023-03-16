@@ -1,10 +1,10 @@
+import Ball from "./ball.js";
+
 export default class World {
   constructor(canvasContainer, worldConfig) {
     // DOM
     this.canvasContainer = canvasContainer;
-    this.canvas = document.createElement("canvas");
-    this.canvas.style.borderRadius = "20px";
-    this.canvasContainer.appendChild(this.canvas);
+    this.counter = document.createElement("p");
 
     // Canvas dimensions
     this.cWidth = this.canvasContainer.clientWidth;
@@ -13,22 +13,16 @@ export default class World {
     // App settings
     this.ballEntry = worldConfig.ballEntry ?? [0.5, 0.5];
     this.ballWidth = 20;
+    this.targetEntry = worldConfig.targetEntry ?? [0.9, 0.2];
+
+    // Init app vars
+    this.score = 0;
 
     // Initialize Matter modules
-    this.Engine = Matter.Engine;
-    this.Events = Matter.Events;
-    this.Runner = Matter.Runner;
-    this.Render = Matter.Render;
-    this.Composite = Matter.Composite;
-    this.Composites = Matter.Composites;
-    this.Body = Matter.Body;
-    this.Bodies = Matter.Bodies;
-    this.Constraint = Matter.Constraint;
-
-    this.engine = this.Engine.create();
-    this.runner = this.Runner.create();
-    this.render = this.Render.create({
-      canvas: this.canvas,
+    this.engine = Matter.Engine.create();
+    this.runner = Matter.Runner.create();
+    this.render = Matter.Render.create({
+      element: this.canvasContainer,
       engine: this.engine,
       options: {
         width: this.cWidth,
@@ -42,157 +36,95 @@ export default class World {
 
     // Add Elements
     this.addGround();
-    this.addTarget();
-    this.addBall(this.ballEntry);
+    this.addTarget(this.targetEntry);
+
+    this.Ball = new Ball({
+      render: this.render,
+      posX: worldConfig.ballEntry[0],
+      posY: worldConfig.ballEntry[1],
+      imgSrc: "../assets/basketball.png",
+    });
+
+    // UI
+    this.addScore();
 
     // Init mouse dragging behaviour
     this.isDragging = false;
     this.pointerStartClient = [];
     this.pointerPosClient = [];
 
-    this.canvas.addEventListener("pointerdown", (e) => {
-      this.ball.isStatic = true;
-      this.isDragging = true;
-      this.pointerStartClient = [e.clientX, e.clientY];
-    });
-    document.addEventListener("pointerup", (e) => {
-      if (this.isDragging) {
-        this.ball.isStatic = false;
-        this.isDragging = false;
-
-        const pointerEndClient = [e.clientX, e.clientY];
-        const pointerTravel = [
-          pointerEndClient[0] - this.pointerStartClient[0],
-          this.pointerStartClient[1] - pointerEndClient[1],
-        ];
-
-        this.applyImpulse(pointerTravel);
-
-        // Reset
-        this.pointerStartClient = [0, 0];
-        this.pointerTravel = [0, 0];
-        this.pointerPosClient = [0, 0];
-      }
-    });
-    document.addEventListener("pointermove", (e) => {
-      this.pointerPosClient = [e.clientX, e.clientY];
-    });
-
     // Init resize behaviour
     window.addEventListener("resize", () => this.resizeCanvas());
 
-    // Draw canvas elements
-    this.Events.on(this.engine, "afterUpdate", () => {
-      if (this.isDragging) {
-        this.drawBallPath();
-      }
-
-      // Check if ball is out of bounds
-      if (
-        this.ball.position.x > this.cWidth + this.ballWidth + 50 ||
-        this.ball.position.x < 0 - this.ballWidth - 50
-      ) {
-        // Remove ball and re-add ball
-        this.Composite.remove(this.engine.world, this.ball);
-        this.addBall(this.ballEntry);
+    // Detect collisions between ball and target
+    Matter.Events.on(this.engine, "collisionStart", (event) => {
+      var pairs = event.pairs;
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i];
+        if (
+          (pair.bodyA.id === "ball" && pair.bodyB.id === "target") ||
+          (pair.bodyA.id === "target" && pair.bodyB === "ball")
+        ) {
+          // Count score
+          this.updateScore();
+        }
       }
     });
   }
 
   drawCanvas() {
     // Render setup
-    this.Render.run(this.render);
+    Matter.Render.run(this.render);
 
     // Run the gameloop
-    this.Runner.run(this.runner, this.engine);
+    Matter.Runner.run(this.runner, this.engine);
+  }
+
+  addScore() {
+    this.counter.style.position = "absolute";
+    this.counter.style.fontFamily = "sans-serif, Helvetica";
+    this.counter.style.top = "50px";
+    this.counter.style.left = "50px";
+    this.counter.style.color = "white";
+    this.counter.style.fontSize = "2rem";
+    this.counter.style.fontWeight = "bold";
+    this.counter.style.zIndex = "100";
+    this.counter.innerHTML = this.score;
+    this.canvasContainer.appendChild(this.counter);
+  }
+
+  updateScore() {
+    this.score++;
+    this.counter.innerHTML = this.score;
   }
 
   /** Add static ground to the world */
   addGround() {
-    this.ground = this.Bodies.rectangle(
+    this.ground = Matter.Bodies.rectangle(
       this.cWidth / 2,
       this.cHeight,
       this.cWidth,
       50,
-      { isStatic: true }
+      { isStatic: true, id: "ground" }
     );
-    this.Composite.add(this.engine.world, [this.ground]);
+    Matter.Composite.add(this.engine.world, [this.ground]);
   }
 
   /** Add target */
-  addTarget() {
-    this.target = this.Bodies.rectangle(
-      this.cWidth / 1.1,
-      this.cWidth / 8,
+  addTarget([x, y]) {
+    this.targetX = x;
+    this.targetY = y;
+    this.target = Matter.Bodies.rectangle(
+      this.cWidth * x,
+      this.cWidth * y,
       20,
       120,
       {
+        id: "target",
         isStatic: true,
       }
     );
-    this.Composite.add(this.engine.world, [this.target]);
-  }
-
-  /**
-   * Draws a ball at the given percentag
-   * @param {[number,number]} percentag Percentage x and y (0-1) of canvas
-   */
-  addBall([x, y]) {
-    this.ballX = x;
-    this.ballY = y;
-    this.ball = this.Bodies.circle(
-      this.cWidth * x + this.ballWidth,
-      this.cHeight - this.cHeight * y - this.ballWidth,
-      this.ballWidth,
-      {
-        id: "ball",
-        restitution: 0.93,
-        render: {
-          sprite: {
-            texture: "assets/basketball.png",
-            xScale: 0.14,
-            yScale: 0.14,
-          },
-        },
-        // isStatic: true,
-      }
-    );
-
-    this.Composite.add(this.engine.world, [this.ball]);
-  }
-
-  // Draws predictive travel path of ball
-  drawBallPath() {
-    this.ctx.beginPath();
-    this.ctx.strokeStyle = "white";
-    this.ctx.moveTo(this.ball.position.x, this.ball.position.y);
-
-    // Line from ball to opposite direction of drag path
-    this.ctx.lineTo(
-      this.ball.position.x +
-        (this.pointerStartClient[0] - this.pointerPosClient[0]),
-      this.ball.position.y +
-        (this.pointerStartClient[1] - this.pointerPosClient[1])
-    );
-    this.ctx.stroke();
-  }
-
-  /**
-   * @param {[number,number]} impulse Impulse x and y
-   */
-  applyImpulse([x, y]) {
-    // Make sure that it has been dragged
-    if (Math.abs(x + y) > 0) {
-      // Remove any velocity before applying impulse
-      this.Body.setVelocity(this.ball, {
-        x: 0,
-        y: 0,
-      });
-      this.Body.applyForce(this.ball, this.ball.position, {
-        x: x * -0.0003,
-        y: y * 0.0003,
-      });
-    }
+    Matter.Composite.add(this.engine.world, [this.target]);
   }
 
   resizeCanvas() {
@@ -209,22 +141,28 @@ export default class World {
     this.render.canvas.height = this.cHeight;
 
     // Update Ball
-    this.Body.setPosition(this.ball, {
-      x: this.cWidth * this.ballX + this.ballWidth,
-      y: this.cHeight - this.cHeight * this.ballY - this.ballWidth,
-    });
+    // Matter.Body.setPosition(this.ball, {
+    //   x: this.cWidth * this.ballX + this.ballWidth,
+    //   y: this.cHeight - this.cHeight * this.ballY - this.ballWidth,
+    // });
 
     // Update ground
-    this.Body.setPosition(this.ground, {
+    Matter.Body.setPosition(this.ground, {
       x: this.cWidth / 2,
       y: this.cHeight,
     });
-    this.Body.setVertices(this.ground, [
+    Matter.Body.setVertices(this.ground, [
       { x: 0, y: 0 },
       { x: this.cWidth, y: 0 },
       { x: this.cWidth, y: 50 },
       { x: 0, y: 50 },
     ]);
+
+    // Update target
+    Matter.Body.setPosition(this.target, {
+      x: this.cWidth * this.targetX,
+      y: this.cHeight * this.targetY,
+    });
   }
 }
 
