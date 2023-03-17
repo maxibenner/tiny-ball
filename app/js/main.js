@@ -1,4 +1,5 @@
 import World from "./world.js";
+import Client from "./client.js";
 
 const canvasContainer = document.getElementById("world-container");
 const worldConfig = {
@@ -6,3 +7,5 @@ const worldConfig = {
 };
 const world = new World(canvasContainer, worldConfig);
 world.drawCanvas();
+
+const client = new Client();

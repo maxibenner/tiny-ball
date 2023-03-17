@@ -42,7 +42,7 @@ export default class World {
       render: this.render,
       posX: worldConfig.ballEntry[0],
       posY: worldConfig.ballEntry[1],
-      imgSrc: "../assets/basketball.png",
+      imgSrc: "./assets/basketball.png",
     });
 
     // UI
