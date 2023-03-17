@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tiny Ball 🏀</title>
-</head>
 <body>
-  <h1>Tiny Basketball 🏀</h1>
+<h1>Tiny Ball 🏀</h1>
   <p>Tiny Basketball is a casual multiplayer game that allows friends and co-workers to hang out and shoot some hoops together. The repo includes a web app and a WebSocket server for real-time multiplayer interactions. Players take turns trying to score points by shooting basketballs into the hoop.</p>
   <h2>Features</h2>
   <ul>
@@ -48,4 +41,3 @@ npm install</code></pre>
   <h2>License</h2>
   <p>Tiny Basketball is licensed under the MIT License. See <a href="./LICENSE">LICENSE</a> for more details.</p>
 </body>
-</html>
