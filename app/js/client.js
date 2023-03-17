@@ -8,15 +8,16 @@ export default class Client {
   }
 
   onOpen(event) {
-    console.log("Connected to WebSocket server:", event);
+    console.log("Connected to server " + event.srcElement.url);
   }
   onMessage(event) {
-    console.log("Received message:", event.data);
+    const data = JSON.parse(event.data);
+    console.log(data);
   }
   onClose(event) {
-    console.log("Disconnected from WebSocket server:", event);
+    console.log(event);
   }
-  onError(error) {
-    console.error("WebSocket error:", event);
+  onError(event) {
+    console.error(event);
   }
 }

@@ -18,16 +18,18 @@ function broadcast(message, excludeClient = null) {
 wss.on("connection", (ws) => {
   const clientId = uuidv4();
   clients.set(clientId, ws);
-  console.log("Client connected:", clientId, "Total clients:", clients.size);
 
-  const welcomeMessage = `Welcome! You are client ${clientId}.`;
-  ws.send(welcomeMessage);
+  const welcomeData = JSON.stringify({
+    clientId: clientId,
+    clients: { ...clients, clientId: clientId },
+  });
+  ws.send(welcomeData);
 
-  const newClientMessage = `Client ${clientId} has joined the room.`;
+  const newClientMessage = JSON.stringify({ clients: clients, event: "join" });
   broadcast(newClientMessage, ws);
 
   ws.on("message", (message) => {
-    console.log(`Received message: ${message}`);
+    console.log(message);
   });
 
   ws.on("close", () => {
@@ -38,7 +40,7 @@ wss.on("connection", (ws) => {
       "Total clients:",
       clients.size
     );
-    const leaveMessage = `Client ${clientId} has left the room.`;
+    const leaveMessage = JSON.stringify({ clients: clients, event: "leave" });
     broadcast(leaveMessage);
   });
 });
