@@ -9,12 +9,12 @@
   </ul>
   <h2>How to Play</h2>
   <ol>
-    <li>Visit the Tiny Basketball web app.</li>
+    <li>Visit the Tiny Ball web app.</li>
     <li>Choose a username</li>
     <li>Invite friends or coworkers to join your room. Everyone visiting the same site will automatically appear in the same room.</li>
   </ol>
   <h2>Setup</h2>
-  <h3>Requirements</
+  <h3>Requirements</h3>
   <ul>
     <li>Node.js</li>
     <li>npm</li>
