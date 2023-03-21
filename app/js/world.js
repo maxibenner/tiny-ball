@@ -4,11 +4,10 @@ export default class World {
   constructor(canvasContainer, worldConfig) {
     // DOM
     this.canvasContainer = canvasContainer;
+    this.canvasContainer.style.flexGrow = 1;
+    this.canvasContainer.style.position = "relative";
+    this.canvasContainer.style.backgroundColor = "red";
     this.counter = document.createElement("p");
-
-    // Canvas dimensions
-    this.cWidth = this.canvasContainer.clientWidth;
-    this.cHeight = this.canvasContainer.clientHeight;
 
     // App settings
     this.ballEntry = worldConfig.ballEntry ?? [0.5, 0.5];
@@ -18,6 +17,14 @@ export default class World {
     // Init app vars
     this.score = 0;
 
+    // Dom vars
+    this.baseWidth = 600;
+    this.dimension = Math.min(
+      this.canvasContainer.clientWidth,
+      this.canvasContainer.clientHeight
+    );
+    this.scale = this.dimension / this.baseWidth;
+
     // Initialize Matter modules
     this.engine = Matter.Engine.create();
     this.runner = Matter.Runner.create();
@@ -25,14 +32,22 @@ export default class World {
       element: this.canvasContainer,
       engine: this.engine,
       options: {
-        width: this.cWidth,
-        height: this.cHeight,
+        width: this.baseWidth,
+        height: this.baseWidth,
         wireframes: false,
       },
     });
+    this.render.canvas.style.scale = this.scale;
 
     // Add context to variables
     this.ctx = this.render.context;
+
+    // Style canvas
+    this.render.canvas.style.borderRadius = "25px";
+    this.render.canvas.style.position = "absolute";
+    this.render.canvas.style.top = 0;
+    this.render.canvas.style.left = 0;
+    this.render.canvas.style.transformOrigin = "left top";
 
     // Add Elements
     this.addGround();
@@ -129,16 +144,24 @@ export default class World {
 
   resizeCanvas() {
     // Get new canvas size
-    this.cWidth = this.canvasContainer.clientWidth;
-    this.cHeight = this.canvasContainer.clientHeight;
+    this.dimension = Math.min(
+      this.canvasContainer.clientWidth,
+      this.canvasContainer.clientHeight
+    );
+    this.scale = this.dimension / this.baseWidth;
+
+    // Set new canvas scale
+    console.log(this.dimension);
+    console.log(this.render.canvas.clientWidth);
+    this.render.canvas.style.transform = `scale(${this.scale})`;
 
     // Update render
-    this.render.bounds.max.x = this.cWidth;
-    this.render.bounds.max.y = this.cHeight;
-    this.render.options.width = this.cWidth;
-    this.render.options.height = this.cHeight;
-    this.render.canvas.width = this.cWidth;
-    this.render.canvas.height = this.cHeight;
+    // this.render.bounds.max.x = this.cWidth;
+    // this.render.bounds.max.y = this.cHeight;
+    // this.render.options.width = this.cWidth;
+    // this.render.options.height = this.cHeight;
+    // this.render.canvas.width = this.cWidth;
+    // this.render.canvas.height = this.cHeight;
 
     // Update Ball
     // Matter.Body.setPosition(this.ball, {
@@ -147,22 +170,22 @@ export default class World {
     // });
 
     // Update ground
-    Matter.Body.setPosition(this.ground, {
-      x: this.cWidth / 2,
-      y: this.cHeight,
-    });
-    Matter.Body.setVertices(this.ground, [
-      { x: 0, y: 0 },
-      { x: this.cWidth, y: 0 },
-      { x: this.cWidth, y: 50 },
-      { x: 0, y: 50 },
-    ]);
+    // Matter.Body.setPosition(this.ground, {
+    //   x: this.cWidth / 2,
+    //   y: this.cHeight,
+    // });
+    // Matter.Body.setVertices(this.ground, [
+    //   { x: 0, y: 0 },
+    //   { x: this.cWidth, y: 0 },
+    //   { x: this.cWidth, y: 50 },
+    //   { x: 0, y: 50 },
+    // ]);
 
-    // Update target
-    Matter.Body.setPosition(this.target, {
-      x: this.cWidth * this.targetX,
-      y: this.cHeight * this.targetY,
-    });
+    // // Update target
+    // Matter.Body.setPosition(this.target, {
+    //   x: this.cWidth * this.targetX,
+    //   y: this.cHeight * this.targetY,
+    // });
   }
 }
 
