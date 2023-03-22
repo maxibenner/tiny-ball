@@ -66,8 +66,8 @@ export default class Ball {
 
       // Check if ball is out of bounds
       if (
-        this.body.position.x > this.cWidth + this.ballWidth + 50 ||
-        this.body.position.x < 0 - this.ballWidth - 50
+        this.body.position.x > this.cWidth + this.ballWidth + 10 ||
+        this.body.position.x < 0 - this.ballWidth - 10
       ) {
         // Remove ball and re-add ball
         Matter.Composite.remove(this.render.engine.world, this.body);

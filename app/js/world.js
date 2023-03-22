@@ -1,4 +1,5 @@
 import Ball from "./ball.js";
+import Bucket from "./bucket.js";
 
 export default class World {
   constructor(canvasContainer, worldConfig) {
@@ -9,7 +10,6 @@ export default class World {
 
     // Init DOM
     this.canvasContainer = canvasContainer;
-    this.counter = document.createElement("p");
 
     // Style container
     this.canvasContainer.style.flexGrow = 1;
@@ -24,8 +24,6 @@ export default class World {
       this.canvasContainer.clientHeight
     );
     this.scale = this.dimension / this.baseWidth;
-    // Game vars
-    this.score = 0;
 
     // Initialize Matter modules
     this.engine = Matter.Engine.create();
@@ -52,6 +50,7 @@ export default class World {
     this.render.canvas.style.margin = "0 auto";
 
     // Add Elements
+    this.bucket = new Bucket(this.render);
     this.addGround();
     this.addTarget(this.targetEntry);
 
@@ -62,26 +61,10 @@ export default class World {
       imgSrc: "./assets/basketball.png",
     });
 
-    // UI
-    this.addScore();
-
     // Init resize behaviour
     window.addEventListener("resize", () => this.resizeCanvas());
 
-    // Detect collisions between ball and target
-    Matter.Events.on(this.engine, "collisionStart", (event) => {
-      var pairs = event.pairs;
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i];
-        if (
-          (pair.bodyA.id === "ball" && pair.bodyB.id === "target") ||
-          (pair.bodyA.id === "target" && pair.bodyB === "ball")
-        ) {
-          // Count score
-          this.updateScore();
-        }
-      }
-    });
+    this.drawCanvas();
   }
 
   drawCanvas() {
@@ -90,24 +73,6 @@ export default class World {
 
     // Run the gameloop
     Matter.Runner.run(this.runner, this.engine);
-  }
-
-  addScore() {
-    this.counter.style.position = "absolute";
-    this.counter.style.fontFamily = "sans-serif, Helvetica";
-    this.counter.style.top = "50px";
-    this.counter.style.left = "50px";
-    this.counter.style.color = "white";
-    this.counter.style.fontSize = "2rem";
-    this.counter.style.fontWeight = "bold";
-    this.counter.style.zIndex = "100";
-    this.counter.innerHTML = this.score;
-    this.canvasContainer.appendChild(this.counter);
-  }
-
-  updateScore() {
-    this.score++;
-    this.counter.innerHTML = this.score;
   }
 
   /** Add static ground to the world */
@@ -147,118 +112,8 @@ export default class World {
     );
     this.scale = this.dimension / this.baseWidth;
     this.render.canvas.style.scale = this.scale;
-
-    // Update render
-    // this.render.bounds.max.x = this.cWidth;
-    // this.render.bounds.max.y = this.cHeight;
-    // this.render.options.width = this.cWidth;
-    // this.render.options.height = this.cHeight;
-    // this.render.canvas.width = this.cWidth;
-    // this.render.canvas.height = this.cHeight;
-
-    // Update Ball
-    // Matter.Body.setPosition(this.ball, {
-    //   x: this.cWidth * this.ballX + this.ballWidth,
-    //   y: this.cHeight - this.cHeight * this.ballY - this.ballWidth,
-    // });
-
-    // Update ground
-    // Matter.Body.setPosition(this.ground, {
-    //   x: this.cWidth / 2,
-    //   y: this.cHeight,
-    // });
-    // Matter.Body.setVertices(this.ground, [
-    //   { x: 0, y: 0 },
-    //   { x: this.cWidth, y: 0 },
-    //   { x: this.cWidth, y: 50 },
-    //   { x: 0, y: 50 },
-    // ]);
-
-    // // Update target
-    // Matter.Body.setPosition(this.target, {
-    //   x: this.cWidth * this.targetX,
-    //   y: this.cHeight * this.targetY,
-    // });
   }
 }
-
-// // Bucket
-// var group = Body.nextGroup(true);
-// var lineOne = Composites.stack(
-//   cWidth - cWidth / 6,
-//   300,
-//   1,
-//   5,
-//   0,
-//   1,
-//   chainlinkHeavy
-// );
-// var lineTwo = Composites.stack(
-//   cWidth - cWidth / 6 + 50,
-//   300,
-//   1,
-//   5,
-//   0,
-//   1,
-//   chainlinkHeavy
-// );
-// var lineThree = Composites.stack(
-//   cWidth - cWidth / 6,
-//   308,
-//   5,
-//   1,
-//   1,
-//   0,
-//   chainlinkLight
-// );
-// Composites.chain(lineOne, 0.5, 0, 0, 0, { stiffness: 0.9 });
-// Composites.chain(lineTwo, 0.5, 0, 0, 0, { stiffness: 0.9 });
-// Composites.chain(lineThree, 0.5, 0, 0, 0, { stiffness: 0.9 });
-
-// function chainlinkHeavy(x, y) {
-//   return Bodies.circle(x, y, 10, {
-//     collisionFilter: { group: group },
-//     density: 0.01,
-//     // isStatic: true,
-//   });
-// }
-// function chainlinkLight(x, y) {
-//   return Bodies.circle(x, y, 10, {
-//     collisionFilter: { mask: 0 },
-//     density: 0.001,
-//     // isStatic: true,
-//   });
-// }
-
-// // Ground
-// var ground = Bodies.rectangle(cWidth / 2, cHeight, 10000, 60, {
-//   isStatic: true,
-// });
-
-// var composite = Composite.add(engine.world, [
-//   ball,
-//   lineOne,
-//   lineTwo,
-//   lineThree,
-//   ground,
-//   // Bucket constraints
-//   Constraint.create({
-//     pointA: { x: cWidth - cWidth / 6, y: 300 },
-//     bodyB: lineOne.bodies[0],
-//   }),
-//   Constraint.create({
-//     pointA: { x: cWidth - cWidth / 6 + 50, y: 300 },
-//     bodyB: lineTwo.bodies[0],
-//   }),
-//   Constraint.create({
-//     bodyA: lineThree.bodies[0],
-//     bodyB: lineOne.bodies[1],
-//   }),
-//   Constraint.create({
-//     bodyA: lineThree.bodies[lineThree.bodies.length - 1],
-//     bodyB: lineTwo.bodies[1],
-//   }),
-// ]);
 
 // // Add mouse control
 // var mouse = Matter.Mouse.create(render.canvas);
