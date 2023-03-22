@@ -2,28 +2,25 @@ import Ball from "./ball.js";
 
 export default class World {
   constructor(canvasContainer, worldConfig) {
-    // DOM
-    this.canvasContainer = canvasContainer;
-    this.canvasContainer.style.flexGrow = 1;
-    this.canvasContainer.style.position = "relative";
-    this.canvasContainer.style.overflow = "hidden";
-    this.counter = document.createElement("p");
-
-    // App settings
+    // App config
     this.ballEntry = worldConfig.ballEntry ?? [0.5, 0.5];
     this.ballWidth = 20;
     this.targetEntry = worldConfig.targetEntry ?? [0.9, 0.2];
 
-    // Init app vars
-    this.score = 0;
+    // Init DOM
+    this.canvasContainer = canvasContainer;
+    this.counter = document.createElement("p");
 
-    // Dom vars
+    // State
+    // Functional vars
     this.baseWidth = 600;
     this.dimension = Math.min(
       this.canvasContainer.clientWidth,
       this.canvasContainer.clientHeight
     );
     this.scale = this.dimension / this.baseWidth;
+    // Game vars
+    this.score = 0;
 
     // Initialize Matter modules
     this.engine = Matter.Engine.create();
@@ -37,12 +34,15 @@ export default class World {
         wireframes: false,
       },
     });
+    // Set scale
     this.resizeCanvas();
 
-    // Add context to variables
-    this.ctx = this.render.context;
-
-    // Style canvas
+    // Style DOM
+    // Canvas container
+    this.canvasContainer.style.flexGrow = 1;
+    this.canvasContainer.style.position = "relative";
+    this.canvasContainer.style.overflow = "hidden";
+    // Canvas
     this.render.canvas.style.borderRadius = "25px";
     this.render.canvas.style.position = "absolute";
     this.render.canvas.style.top = 0;
@@ -64,11 +64,6 @@ export default class World {
 
     // UI
     this.addScore();
-
-    // Init mouse dragging behaviour
-    this.isDragging = false;
-    this.pointerStartClient = [];
-    this.pointerPosClient = [];
 
     // Init resize behaviour
     window.addEventListener("resize", () => this.resizeCanvas());
@@ -145,15 +140,12 @@ export default class World {
   }
 
   resizeCanvas() {
-    // Get new canvas size
+    // Get updated container size and update canvas scale
     this.dimension = Math.min(
       this.canvasContainer.clientWidth,
       this.canvasContainer.clientHeight
     );
     this.scale = this.dimension / this.baseWidth;
-
-    // Set new canvas scale
-    // this.render.canvas.style.transform = `scale(${this.scale})`;
     this.render.canvas.style.scale = this.scale;
 
     // Update render
