@@ -6,7 +6,7 @@ export default class World {
     this.canvasContainer = canvasContainer;
     this.canvasContainer.style.flexGrow = 1;
     this.canvasContainer.style.position = "relative";
-    this.canvasContainer.style.backgroundColor = "red";
+    this.canvasContainer.style.overflow = "hidden";
     this.counter = document.createElement("p");
 
     // App settings
@@ -37,7 +37,7 @@ export default class World {
         wireframes: false,
       },
     });
-    this.render.canvas.style.scale = this.scale;
+    this.resizeCanvas();
 
     // Add context to variables
     this.ctx = this.render.context;
@@ -46,8 +46,10 @@ export default class World {
     this.render.canvas.style.borderRadius = "25px";
     this.render.canvas.style.position = "absolute";
     this.render.canvas.style.top = 0;
-    this.render.canvas.style.left = 0;
+    this.render.canvas.style.left = "50%";
+    this.render.canvas.style.transform = "translateX(-50%)";
     this.render.canvas.style.transformOrigin = "left top";
+    this.render.canvas.style.margin = "0 auto";
 
     // Add Elements
     this.addGround();
@@ -116,9 +118,9 @@ export default class World {
   /** Add static ground to the world */
   addGround() {
     this.ground = Matter.Bodies.rectangle(
-      this.cWidth / 2,
-      this.cHeight,
-      this.cWidth,
+      this.baseWidth / 2,
+      this.baseWidth,
+      this.baseWidth,
       50,
       { isStatic: true, id: "ground" }
     );
@@ -130,8 +132,8 @@ export default class World {
     this.targetX = x;
     this.targetY = y;
     this.target = Matter.Bodies.rectangle(
-      this.cWidth * x,
-      this.cWidth * y,
+      this.baseWidth * x,
+      this.baseWidth * y,
       20,
       120,
       {
@@ -151,9 +153,8 @@ export default class World {
     this.scale = this.dimension / this.baseWidth;
 
     // Set new canvas scale
-    console.log(this.dimension);
-    console.log(this.render.canvas.clientWidth);
-    this.render.canvas.style.transform = `scale(${this.scale})`;
+    // this.render.canvas.style.transform = `scale(${this.scale})`;
+    this.render.canvas.style.scale = this.scale;
 
     // Update render
     // this.render.bounds.max.x = this.cWidth;
