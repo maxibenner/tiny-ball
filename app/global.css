@@ -11,6 +11,10 @@ body {
 }
 #tinyball-container {
   max-height: 80vh;
+  /* flex-grow: 1;
+  position: relative;
+  overflow: hidden;
+  background: red; */
 }
 #ui-container {
   position: absolute;

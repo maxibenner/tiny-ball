@@ -11,6 +11,12 @@ export default class World {
     this.canvasContainer = canvasContainer;
     this.counter = document.createElement("p");
 
+    // Style container
+    this.canvasContainer.style.flexGrow = 1;
+    this.canvasContainer.style.position = "relative";
+    this.canvasContainer.style.overflow = "hidden";
+    this.canvasContainer.style.background = "red";
+
     // State
     // Functional vars
     this.baseWidth = 600;
@@ -37,12 +43,7 @@ export default class World {
     // Set scale
     this.resizeCanvas();
 
-    // Style DOM
-    // Canvas container
-    this.canvasContainer.style.flexGrow = 1;
-    this.canvasContainer.style.position = "relative";
-    this.canvasContainer.style.overflow = "hidden";
-    // Canvas
+    // Style canvas
     this.render.canvas.style.borderRadius = "25px";
     this.render.canvas.style.position = "absolute";
     this.render.canvas.style.top = 0;
