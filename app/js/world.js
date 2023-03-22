@@ -15,7 +15,6 @@ export default class World {
     this.canvasContainer.style.flexGrow = 1;
     this.canvasContainer.style.position = "relative";
     this.canvasContainer.style.overflow = "hidden";
-    this.canvasContainer.style.background = "red";
 
     // State
     // Functional vars
