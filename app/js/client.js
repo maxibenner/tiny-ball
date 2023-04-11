@@ -5,6 +5,8 @@ export default class Client {
     this.ws.addEventListener("message", this.onMessage.bind(this));
     this.ws.addEventListener("close", this.onClose.bind(this));
     this.ws.addEventListener("error", this.onError.bind(this));
+
+    this.users = [];
   }
 
   onOpen(event) {

@@ -9,4 +9,4 @@ const worldConfig = {
 const world = new World(canvasContainer, worldConfig);
 const score = new ScoreCounter(canvasContainer, world);
 
-// const client = new Client();
+const client = new Client();
