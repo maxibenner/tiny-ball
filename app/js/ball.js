@@ -8,73 +8,90 @@
  *
  */
 export default class Ball {
-  constructor({ render, posX, posY, ballWidth, imgSrc }) {
-    this.posX = posX || 0;
-    this.posY = posY || 0;
+  constructor({ render, posX = 0, posY = 0, ballWidth = 20, imgSrc = null }) {
+    this.initializeProperties({ render, posX, posY, ballWidth, imgSrc });
+    this.addBall();
+    this.setupEventListeners();
+  }
+
+  initializeProperties({ render, posX, posY, ballWidth, imgSrc }) {
     this.ctx = render.context;
     this.cWidth = render.canvas.width;
     this.cHeight = render.canvas.height;
-    this.ballWidth = ballWidth ?? 20;
-    this.imgSrc = imgSrc || null;
+    this.posX = posX;
+    this.posY = posY;
+    this.ballWidth = ballWidth;
+    this.imgSrc = imgSrc;
     this.render = render;
-    this.body;
+    this.body = null;
     this.forceMultiplier = 0.0003;
-
     this.isDragging = false;
     this.pointerStart = [0, 0];
     this.pointerPos = [0, 0];
-
-    this.addBall();
-
-    ///////////////////// LISTENERS //////////////////////
-    this.render.canvas.addEventListener("pointerdown", (e) => {
-      this.setIsStatic(true);
-      this.isDragging = true;
-
-      this.pointerStart = [e.clientX, e.clientY];
-      this.pointerPos = [e.clientX, e.clientY];
-    });
-    document.addEventListener("pointermove", (e) => {
-      this.pointerPos = [e.clientX, e.clientY];
-    });
-    document.addEventListener("pointerup", (e) => {
-      if (this.isDragging) {
-        this.setIsStatic(false);
-        this.isDragging = false;
-
-        const travel = [
-          this.pointerPos[0] - this.pointerStart[0],
-          (this.pointerPos[1] - this.pointerStart[1]) * -1,
-        ];
-
-        this.applyImpulse([
-          travel[0] * this.forceMultiplier,
-          travel[1] * this.forceMultiplier,
-        ]);
-
-        // Reset pointer positions
-        this.pointerStart = [0, 0];
-        this.pointerPos = [0, 0];
-      }
-    });
-
-    // Draw canvas elements
-    Matter.Events.on(this.render.engine, "afterUpdate", () => {
-      if (this.isDragging) {
-        this.drawPredictedPath();
-      }
-
-      // Check if ball is out of bounds
-      if (
-        this.body.position.x > this.cWidth + this.ballWidth + 10 ||
-        this.body.position.x < 0 - this.ballWidth - 10
-      ) {
-        // Remove ball and re-add ball
-        Matter.Composite.remove(this.render.engine.world, this.body);
-        this.addBall();
-      }
-    });
   }
+
+  setupEventListeners() {
+    const canvas = this.render.canvas;
+    canvas.addEventListener("pointerdown", this.onPointerDown.bind(this));
+    document.addEventListener("pointermove", this.onPointerMove.bind(this));
+    document.addEventListener("pointerup", this.onPointerUp.bind(this));
+
+    Matter.Events.on(this.render.engine, "afterUpdate", this.afterUpdate.bind(this));
+  }
+
+  onPointerDown(e) {
+    this.setIsStatic(true);
+    this.isDragging = true;
+    this.pointerStart = [e.clientX, e.clientY];
+    this.pointerPos = [e.clientX, e.clientY];
+  }
+
+  onPointerMove(e) {
+    this.pointerPos = [e.clientX, e.clientY];
+  }
+
+  onPointerUp(e) {
+    if (this.isDragging) {
+      this.handlePointerUp();
+    }
+  }
+
+  handlePointerUp() {
+    this.setIsStatic(false);
+    this.isDragging = false;
+    const travel = [
+      this.pointerPos[0] - this.pointerStart[0],
+      (this.pointerPos[1] - this.pointerStart[1]) * -1,
+    ];
+    this.applyImpulse([
+      travel[0] * this.forceMultiplier,
+      travel[1] * this.forceMultiplier,
+    ]);
+    this.resetPointerPositions();
+  }
+
+  resetPointerPositions() {
+    this.pointerStart = [0, 0];
+    this.pointerPos = [0, 0];
+  }
+
+  afterUpdate() {
+    if (this.isDragging) {
+      this.drawPredictedPath();
+    }
+    this.checkOutOfBounds();
+  }
+
+  checkOutOfBounds() {
+    if (
+      this.body.position.x > this.cWidth + this.ballWidth + 10 ||
+      this.body.position.x < 0 - this.ballWidth - 10
+    ) {
+      Matter.Composite.remove(this.render.engine.world, this.body);
+      this.addBall();
+    }
+  }
+
 
   /**
    * Draw a ball at the given percentag

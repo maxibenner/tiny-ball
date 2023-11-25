@@ -8,13 +8,12 @@ body {
   min-height: 100vh;
   display: flex;
   padding: 25px;
+  background-image: url("./assets/bg.png");
+  background-position: center;
+  background-size: cover;
 }
 #tinyball-container {
   max-height: 80vh;
-  /* flex-grow: 1;
-  position: relative;
-  overflow: hidden;
-  background: red; */
 }
 #ui-container {
   position: absolute;
